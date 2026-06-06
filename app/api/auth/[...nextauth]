@@ -1,0 +1,28 @@
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+
+const handler = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        // DI SINI LOGIKA LOGIN KE FIREBASE ANDA
+        // Contoh sederhana (ganti dengan logika Firebase Auth Anda):
+        if (credentials?.email === "user@example.com" && credentials?.password === "password") {
+          return { id: "1", name: "Warga", email: credentials.email };
+        }
+        return null; // Jika gagal
+      }
+    })
+  ],
+  pages: {
+    signIn: "/login", // Arahkan ke halaman login Anda
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+});
+
+export { handler as GET, handler as POST };
