@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { auth, db } from "@/lib/firebase";
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import { ShieldCheck, AlertCircle, Eye, EyeOff } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { Mail, Lock, Eye, EyeOff, ShieldCheck, User, Phone, FileText, UserPlus } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
-
   const [formData, setFormData] = useState({
     name: "",
     nik: "",
@@ -17,106 +18,202 @@ export default function RegisterPage() {
     email: "",
     password: "",
   });
-
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    if (error) setError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
-    // Validasi Sesuai SKPL F-02
+    // Validasi F-02: Kekuatan Kata Sandi (Minimal 8 Karakter)
     if (formData.password.length < 8) {
-      setError("Kata sandi terlalu pendek! Minimal harus 8 karakter.");
+      toast.error("Kata sandi harus minimal 8 karakter!");
       setIsLoading(false);
       return;
     }
 
     try {
-      // Simulasi proses daftar
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 1. Daftarkan akun ke Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
+
+      // 2. Kirim email verifikasi (Kebutuhan F-03)
+      await sendEmailVerification(user);
+
+      // 3. Simpan data profil tambahan ke Firestore koleksi 'users'
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        nik: formData.nik || null, // NIK Opsional (F-01)
+        role: "masyarakat", // Default role untuk registrasi publik
+        createdAt: new Date().toISOString(),
+      });
+
+      // 4. Paksa Sign Out setelah register agar sesi login otomatis Firebase dibersihkan
+      await signOut(auth);
+
+      toast.success("Registrasi berhasil! Silakan cek email Anda untuk verifikasi.");
       
-      toast.success("Akun berhasil dibuat! Silakan masuk.");
+      // Kosongkan form
+      setFormData({ name: "", nik: "", phone: "", email: "", password: "" });
       
-      // Navigasi ke halaman login yang benar
-      router.push("/login"); 
-    } catch (err) {
-      toast.error("Terjadi kesalahan sistem.");
+      // Alihkan ke halaman login setelah 2 detik
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === "auth/email-already-in-use") {
+        toast.error("Email sudah digunakan oleh akun lain! (F-04)");
+      } else if (err.code === "permission-denied") {
+        toast.error("Gagal menyimpan data. Periksa kembali Rules Firestore Anda!");
+      } else {
+        toast.error(err.message || "Terjadi kesalahan saat mendaftar.");
+      }
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
-  };
-
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none"></div>
-      
+    <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center p-4 py-12">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-xl bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative z-10 my-8"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl"
       >
-        <div className="flex justify-center mb-4">
-          <div className="bg-blue-600/10 border border-blue-500/20 p-3 rounded-2xl flex items-center gap-2 text-blue-400">
-            <ShieldCheck className="w-6 h-6" />
-            <span className="font-extrabold text-sm tracking-wider">SIPMAS-KELURAHAN NGEMPLAKREJO</span>
+        <div className="flex justify-center mb-6">
+          <div className="bg-blue-600/10 p-3 rounded-2xl text-blue-400">
+            <ShieldCheck className="w-8 h-8" />
           </div>
         </div>
 
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Pendaftaran Akun Warga</h1>
-          <p className="text-slate-400 text-sm mt-1">Lengkapi data diri Anda untuk mulai mengajukan pengaduan</p>
-        </div>
+        <h1 className="text-2xl font-bold text-white text-center mb-2">SIPMAS KELURAHAN NGEMPLAKREJO</h1>
+        <p className="text-slate-400 text-center text-sm mb-8">Registrasi Akun Masyarakat Kelurahan Ngemplakrejo</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <motion.div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3.5 flex items-center gap-2 text-red-400 text-xs font-semibold">
-              <AlertCircle className="w-4.5 h-4.5 shrink-0" />
-              <span>{error}</span>
-            </motion.div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Nama Lengkap *</label>
-              <input type="text" name="name" required value={formData.name} onChange={handleChange} className="w-full bg-slate-950/80 border border-slate-800 focus:border-blue-500 rounded-xl py-2.5 pl-4 pr-4 text-white text-sm outline-none transition-all" placeholder="Nama sesuai KTP" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">NIK (Opsional)</label>
-              <input type="text" name="nik" maxLength={16} value={formData.nik} onChange={handleChange} className="w-full bg-slate-950/80 border border-slate-800 focus:border-blue-500 rounded-xl py-2.5 pl-4 pr-4 text-white text-sm outline-none transition-all" placeholder="16 digit No. KTP" />
-            </div>
-          </div>
-
+        <form onSubmit={handleRegister} className="space-y-4">
+          
+          {/* Input Nama Lengkap */}
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Alamat Email *</label>
-            <input type="email" name="email" required value={formData.email} onChange={handleChange} className="w-full bg-slate-950/80 border border-slate-800 focus:border-blue-500 rounded-xl py-2.5 pl-4 pr-4 text-white text-sm outline-none transition-all" placeholder="nama@email.com" />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Kata Sandi (Min. 8 Karakter) *</label>
+            <label className="text-xs font-bold text-slate-400 uppercase mb-1.5 block">Nama Lengkap *</label>
             <div className="relative">
-              <input type={showPassword ? "text" : "password"} name="password" required value={formData.password} onChange={handleChange} className="w-full bg-slate-950/80 border border-slate-800 focus:border-blue-500 rounded-xl py-2.5 pl-4 pr-11 text-white text-sm outline-none transition-all" placeholder="••••••••" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+              <input
+                type="text"
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:border-blue-500 outline-none transition-all"
+                placeholder="Masukkan nama sesuai KTP"
+              />
+            </div>
+          </div>
+
+          {/* Input NIK (Opsional) */}
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-bold text-slate-400 uppercase block">NIK</label>
+              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Opsional</span>
+            </div>
+            <div className="relative">
+              <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+              <input
+                type="text"
+                name="nik"
+                value={formData.nik}
+                onChange={handleChange}
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:border-blue-500 outline-none transition-all"
+                placeholder="16 digit nomor NIK"
+              />
+            </div>
+          </div>
+
+          {/* Input Nomor HP / WhatsApp */}
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase mb-1.5 block">Nomor HP / WhatsApp *</label>
+            <div className="relative">
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+              <input
+                type="tel"
+                name="phone"
+                required
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:border-blue-500 outline-none transition-all"
+                placeholder="Contoh: 08123456789"
+              />
+            </div>
+          </div>
+
+          {/* Input Email */}
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase mb-1.5 block">Email *</label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+              <input
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:border-blue-500 outline-none transition-all"
+                placeholder="nama@email.com"
+              />
+            </div>
+          </div>
+
+          {/* Input Password */}
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase mb-1.5 block">Kata Sandi *</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl py-3 pl-11 pr-11 text-white text-sm focus:border-blue-500 outline-none transition-all"
+                placeholder="•••••••• (Min. 8 Karakter)"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+              >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          <button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all">
-            {isLoading ? "Memproses..." : "Daftarkan Akun Baru"}
+          {/* Tombol Submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 mt-6 disabled:opacity-50"
+          >
+            {isLoading ? "Memproses..." : <><UserPlus className="w-4 h-4" /> Daftar Akun</>}
           </button>
         </form>
+
+        {/* Link Kembali ke Login */}
+        <div className="mt-6 text-center text-sm text-slate-500">
+          Sudah punya akun?{" "}
+          <a href="/login" className="text-blue-400 font-semibold hover:underline">Masuk di sini</a>
+        </div>
       </motion.div>
     </div>
   );
