@@ -46,9 +46,6 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-// ─────────────────────────────────────────────
-// INTERFACES — sesuai Bab 5.4.2 SKPL
-// ─────────────────────────────────────────────
 
 interface Complaint {
   id: string;

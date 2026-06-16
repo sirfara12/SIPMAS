@@ -47,8 +47,7 @@ export default function AdminLoginPage() {
         if (userRole === "admin" || userRole === "superadmin") {
           toast.success(`Selamat datang di Panel Petugas, ${userData.name}!`);
           
-          // Redirect ke Dashboard Admin (Sesuai Bab 6.2)
-          router.push("/admin"); 
+          router.replace("/admin/dashboard"); 
           router.refresh();
         } else {
           // JIKA WARGA MENCOBA LOGIN DI SINI: Keluarkan paksa & batalkan sesi (NF-07)
