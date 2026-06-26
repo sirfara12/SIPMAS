@@ -118,10 +118,22 @@ export default function LandingPage() {
             className="grid md:grid-cols-3 gap-8"
           >
             {[
-              { icon: Clock, title: "Cepat & Responsif", desc: "Laporan langsung masuk ke dashboard admin Kelurahan tanpa perantara, memangkas waktu birokrasi." },
-              { icon: Search, title: "Transparan & Terlacak", desc: "Dapatkan nomor tiket untuk memantau apakah laporan Anda sedang diverifikasi, diproses, atau selesai." },
-              { icon: CheckCircle, title: "Tindak Lanjut Pasti", desc: "Setiap laporan mendapatkan prioritas penanganan dan riwayat penyelesaian yang bisa dinilai." }
-            ].map((item, idx) => (
+           { 
+                  icon: Clock, 
+                  title: "Laporan Real-Time", 
+                  desc: "Kirim laporan kapan saja dan di mana saja. Data langsung masuk ke sistem admin Kelurahan tanpa proses birokrasi yang rumit." 
+                },
+                { 
+                  icon: ShieldCheck,
+                  title: "Data Terverifikasi", 
+                  desc: "Setiap laporan yang masuk melalui sistem kami dipastikan akurat dan tersimpan dengan aman untuk mempermudah administrasi warga." 
+                },
+                { 
+                  icon: CheckCircle, 
+                  title: "Solusi Tepat Sasaran", 
+                  desc: "Membantu pihak Kelurahan dalam memetakan kebutuhan warga secara cepat agar tindakan yang diambil lebih efektif dan solutif." 
+                }
+              ].map((item, idx) => (
               <motion.div key={idx} variants={fadeIn} className="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-blue-100 hover:shadow-2xl hover:shadow-blue-50 transition-all duration-300 group">
                 <div className="w-16 h-16 bg-white border border-slate-100 shadow-sm rounded-2xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                   <item.icon className="w-8 h-8" />
@@ -148,8 +160,8 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-12 md:gap-8">
             {[
               { step: "01", title: "Daftar / Masuk", desc: "Buat akun warga resmi menggunakan data diri Anda untuk mulai melaporkan." },
-              { step: "02", title: "Tulis Laporan", desc: "Isi form dengan detail kejadian, lokasi, serta lampirkan bukti foto (maks 5 file)." },
-              { step: "03", title: "Pantau Proses", desc: "Lacak perkembangan laporan Anda secara real-time dengan nomor tiket unik." },
+              { step: "02", title: "Tulis Laporan", desc: "Isi form dengan detail kejadian, lokasi, serta lampirkan bukti foto." },
+              { step: "03", title: "Pantau Proses", desc: "Pantau Proses perkembangan laporan Anda." },
               { step: "04", title: "Selesai", desc: "Admin menindaklanjuti laporan hingga selesai." }
             ].map((item, idx) => (
               <div key={idx} className="relative text-center group">
