@@ -165,7 +165,14 @@ export default function LoginPage() {
           Belum terdaftar sebagai anggota?{" "}
           <a href="/register" className="text-blue-400 font-semibold hover:underline">Buat akun warga</a>
         </div>
+        {/* Tautan Kembali ke Portal Publik */}
+        <div className="mt-6 pt-4 border-t border-slate-700/40 text-center">
+          <a href="/" className="text-xs text-slate-500 hover:text-indigo-400 font-semibold transition-colors">
+            ← Kembali ke Portal Dashboard
+          </a>
+        </div>
       </motion.div>
+
     </div>
   );
 }

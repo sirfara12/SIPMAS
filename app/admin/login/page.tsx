@@ -180,7 +180,7 @@ export default function AdminLoginPage() {
         {/* Tautan Kembali ke Portal Publik */}
         <div className="mt-6 pt-4 border-t border-slate-700/40 text-center">
           <a href="/" className="text-xs text-slate-500 hover:text-indigo-400 font-semibold transition-colors">
-            ← Kembali ke Portal Pengaduan Warga
+            ← Kembali ke Portal dashboard
           </a>
         </div>
 

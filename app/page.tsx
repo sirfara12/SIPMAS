@@ -41,7 +41,6 @@ export default function LandingPage() {
             <span className="font-bold text-xl text-slate-800 tracking-tight">SIPMAS-KELURAHAN NGEMPLAKREJO</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/lacak" className="text-slate-600 hover:text-blue-600 font-medium transition">Lacak Tiket</Link>
             
             {/* Tombol Masuk Khusus Warga */}
             <Link href="/login" className="text-slate-600 hover:text-blue-600 font-medium transition">Masuk</Link>

@@ -214,6 +214,12 @@ export default function RegisterPage() {
           Sudah punya akun?{" "}
           <a href="/login" className="text-blue-400 font-semibold hover:underline">Masuk di sini</a>
         </div>
+        {/* Tautan Kembali ke Portal Publik */}
+        <div className="mt-6 pt-4 border-t border-slate-700/40 text-center">
+          <a href="/" className="text-xs text-slate-500 hover:text-indigo-400 font-semibold transition-colors">
+            ← Kembali ke Portal Dashboard
+          </a>
+        </div>
       </motion.div>
     </div>
   );
