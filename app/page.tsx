@@ -150,7 +150,7 @@ export default function LandingPage() {
               { step: "01", title: "Daftar / Masuk", desc: "Buat akun warga resmi menggunakan data diri Anda untuk mulai melaporkan." },
               { step: "02", title: "Tulis Laporan", desc: "Isi form dengan detail kejadian, lokasi, serta lampirkan bukti foto (maks 5 file)." },
               { step: "03", title: "Pantau Proses", desc: "Lacak perkembangan laporan Anda secara real-time dengan nomor tiket unik." },
-              { step: "04", title: "Selesai & Rating", desc: "Admin menindaklanjuti laporan hingga selesai, dan Anda dapat memberikan ulasan kepuasan." }
+              { step: "04", title: "Selesai", desc: "Admin menindaklanjuti laporan hingga selesai." }
             ].map((item, idx) => (
               <div key={idx} className="relative text-center group">
                 {idx !== 3 && <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-blue-500/50 to-transparent"></div>}
